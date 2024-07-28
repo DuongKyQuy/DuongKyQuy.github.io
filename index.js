@@ -1,14 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Lấy thẻ div chứa Count Down Time
-    var countdowntimeContainer = document.getElementById(
-        "countdowntimeContainer"
-    );
+    var countdowntimeContainer = document.getElementById("countdowntimeContainer");
 
     // Tạo thẻ img để thêm background cho web
     var img = document.createElement("img");
 
     // Đặt các thuộc tính cho phần tử <img>
-    img.src = "./image/backgr.png";
+    img.src = "./image/bgg (1).jpg";
 
     // Thêm img vào div
     countdowntimeContainer.appendChild(img);
@@ -18,18 +16,11 @@ document.addEventListener("DOMContentLoaded", function () {
     contentDiv.className = "content";
     countdowntimeContainer.appendChild(contentDiv);
 
-    // Tạo thẻ h3 để thêm title
-    var h3 = document.createElement("h3");
-    h3.textContent = "Exercise Challenge";
-
-    // Thêm h3 vào div
-    contentDiv.appendChild(h3);
-
     // Tạo thẻ p
     var p = document.createElement("p");
     p.className = "timer";
     p.id = "timer";
-    p.textContent = "25:00";
+    p.textContent = "01:00:00";
 
     contentDiv.appendChild(p);
 
@@ -60,26 +51,15 @@ document.addEventListener("DOMContentLoaded", function () {
     var timeInput = document.createElement("input");
     timeInput.type = "text";
     timeInput.id = "timeInput";
-    timeInput.placeholder = "Enter time (MM:SS)";
+    timeInput.placeholder = "Enter time (HH:MM:SS)";
 
     contentDiv.appendChild(timeInput);
 
-    // Thêm sự kiện keydown để cập nhật dữ liệu khi nhấn Enter
-    timeInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            var input = timeInput.value;
-
-            // Kiểm tra định dạng MM:SS
-            var regex = /^[0-5][0-9]:[0-5][0-9]$/;
-            if (regex.test(input)) {
-                p.textContent = input; 
-            }
-
-            timeInput.value = ""; 
-            timeInput.blur(); 
-            event.preventDefault();
-        }
-    });
+    // Thêm thẻ audio vào contentDiv
+    var audio = document.createElement("audio");
+    audio.src = "./sound/sound.mp3"; 
+    audio.id = "audio";
+    contentDiv.appendChild(audio);
 
     var timerInterval;
     var isPaused = true;
@@ -87,32 +67,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function startTimer() {
         var timeParts = p.textContent.split(':');
-        var minutes = parseInt(timeParts[0]);
-        var seconds = parseInt(timeParts[1]);
-        totalSeconds = minutes * 60 + seconds;
+        var hours = parseInt(timeParts[0]);
+        var minutes = parseInt(timeParts[1]);
+        var seconds = parseInt(timeParts[2]);
+        totalSeconds = hours * 3600 + minutes * 60 + seconds;
 
         timerInterval = setInterval(function () {
             if (totalSeconds <= 0) {
                 clearInterval(timerInterval);
-                p.textContent = "00:00";
+                p.textContent = "00:00:00";
                 btnStart.textContent = "START";
                 btnStop.disabled = true;
                 btnStart.disabled = true;
+                audio.pause();
+                audio.currentTime = 0;
+                enableInput();
                 return;
             }
             totalSeconds--;
-            var minutes = Math.floor(totalSeconds / 60);
+            var hours = Math.floor(totalSeconds / 3600);
+            var minutes = Math.floor((totalSeconds % 3600) / 60);
             var seconds = totalSeconds % 60;
-            p.textContent = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            p.textContent = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }, 1000);
     }
 
     function enableInput() {
-        timeInput.disabled = false; 
+        timeInput.disabled = false;
     }
 
     function disableInput() {
-        timeInput.disabled = true; 
+        timeInput.disabled = true;
     }
 
     btnStart.addEventListener('click', function () {
@@ -122,6 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
             btnStart.disabled = true;
             btnStop.disabled = false;
             disableInput();
+            audio.play();
         }
         isPaused = false;
     });
@@ -132,15 +118,41 @@ document.addEventListener("DOMContentLoaded", function () {
         btnStart.disabled = false;
         btnStop.disabled = true;
         enableInput();
+        audio.pause();
     });
 
     btnReset.addEventListener('click', function () {
         clearInterval(timerInterval);
-        p.textContent = "25:00";
+        p.textContent = "01:00:00";
         isPaused = true;
         btnStart.textContent = "START";
         btnStart.disabled = false;
         btnStop.disabled = true;
         enableInput();
+        audio.pause();
+        audio.currentTime = 0;
+    });
+
+    // Thêm sự kiện keydown để cập nhật dữ liệu khi nhấn Enter
+    timeInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            var input = timeInput.value;
+
+            // Kiểm tra định dạng MM:SS
+            var regex = /^[0-2][0-9]:[0-5][0-9]:[0-5][0-9]$/;
+            if (regex.test(input)) {
+                p.textContent = input;
+
+                btnStart.textContent = "START";
+                btnStart.disabled = false;
+                audio.currentTime = 0;
+                audio.pause();
+                isPaused = true; 
+            }
+            timeInput.value = "";
+            timeInput.blur();
+            event.preventDefault();
+        
+        }
     });
 });
